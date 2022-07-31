@@ -25,7 +25,7 @@ def main():
                     for j, cell in enumerate(row):
                         if (cell[0] < pos[0] < cell[0] + cell[2]) and (cell[1] < pos[1] < cell[1] + cell[2]):
                             pygame.draw.rect(SCREEN, 'YELLOW', rect_grid[i][j])
-                        # print(cell[0])
+                        # print(cell[0])   
                         # if cellpos[0]:
                         #     print('collided with rec x: {}, y: {}'.format())
 

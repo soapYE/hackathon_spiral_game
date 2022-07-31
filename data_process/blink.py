@@ -1,3 +1,4 @@
+import numpy as np
 import pywt #小波变换要引入这个包
 def Wavelet_Transform(data,threshold):
     w = pywt.Wavelet('db8')  # 选用Daubechies8小波
@@ -91,7 +92,7 @@ def fil(data,sampling_rate):
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
-df = pd.read_csv(r'C:\Study\PJ\NetHack\our code\eeg_boiler_new_blink.csv')
+df = pd.read_csv(r'.\eeg_boiler_blink_blink.csv')
 # df = pd.read_csv(r'C:\Study\PJ\NetHack\our code\eeg_boiler_close_open.csv')
 
 c1_list=[]
@@ -125,6 +126,11 @@ print(len(c1_list))
 print(len(t_list))
 # c1_list=Wavelet_Transform(c1_list,0)
 # c1_list=fil(np.array(c1_list),256)
+
+
+# c1_list=Wavelet_Transform(np.array(c1_list),0.9)
+
+
 plt.subplot(4, 1, 1)
 plt.plot(t_list,c1_list)
 plt.title("plot 1")
