@@ -22,6 +22,6 @@ inside <i>getData</i> folder there are scripts for get live data from muse2, tha
 
 The game's rule is very simple. choose one block as the start block, and continually choose a direction so that go through each block(other than those red ones) one and only once. Continuous blinkings are used to confirm your start point and directions.
 
-<div align=center><img src="./game.png"></div>
+<div align=center><img src="./game.PNG"></div>
 
 Enjoy!
