@@ -1,6 +1,7 @@
-from Board import *
+from getData.Board import *
 from brainflow.board_shim import BoardIds, BoardShim, BrainFlowInputParams
-def check_if_blink_twice():
+
+def connect_device():
     hardware="Muse"
     model="Muse 2"
     data_type="Task live"
@@ -21,9 +22,16 @@ def check_if_blink_twice():
                 num_points=num_points,
     )
     print("connected!")
-    print(len(exg_channels))
+    return board
+
+def check_if_blink_twice(board):
+    board_id=22
+    exg_channels = BoardShim.get_exg_channels(board_id)
+    #print("connected!")
+    #print(len(exg_channels))
     start = 0
     current = 0
+    board.get_new_data()
     while True:
         data = board.get_new_data()
         for electron in data[exg_channels[3],:]:
@@ -40,5 +48,5 @@ def check_if_blink_twice():
                 print("bigger!")
                 print(current)
         
-
-print(check_if_blink_twice())
+#board = connect_device()
+#print(check_if_blink_twice(board))
