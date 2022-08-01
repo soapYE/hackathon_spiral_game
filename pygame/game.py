@@ -1,8 +1,10 @@
+from tarfile import BLOCKSIZE
 from turtle import pos, position
 import pygame
 
 WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 600
+BLOCK_SIZE = 120 #Set the size of the grid block
 
 clock = pygame.time.Clock()
 
@@ -216,32 +218,81 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 i, j = pos[1] // blockSize, pos[0] // blockSize 
-                cell_color = check_cell_logic(rect_grid, i, j, pos)
+                arrows = check_arrow_logic(rect_grid, i, j, arrows)
+                cell_color = check_cell_logic(rect_grid, i, j)
                 rect_grid[i][j][1] = cell_color
                 arrows = check_arrows(rect_grid, i, j, arrows)
 
-        print(arrows)
+        # print(arrows)
         draw_arrows(arrows)
         clock.tick(10)
         pygame.display.update()
 
+def launch_sequence(rect_grid, arrow, i, j):
+    symbol = arrow[0]
+    if symbol == '↑':
+        for k in range(1, i + 1):
+            if rect_grid[i - k][j][1] == 0:
+                rect_grid[i - k][j][1] = 2
+                # pygame.display.update()
+                # pygame.time.delay(100)
+    elif symbol == '←':
+        for k in range(0, j + 1):
+            if rect_grid[i][j - k][1] == 0:
+                rect_grid[i][j - k][1] = 2
+                # pygame.display.update()
+                # pygame.time.delay(100)
+    elif symbol == '↓':
+        for k in range(0, WINDOW_HEIGHT // BLOCK_SIZE - i):
+            if rect_grid[i + k][j][1] == 0:
+                rect_grid[i + k][j][1] = 2
+                # pygame.display.update()
+                # pygame.time.delay(100)
+    elif symbol == '→': 
+        for k in range(0, WINDOW_WIDTH // BLOCK_SIZE - j):
+            if rect_grid[i][j + k][1] == 0:
+                rect_grid[i][j + k][1] = 2
+                # pygame.display.update()
+                # pygame.time.delay(100)
 
-def check_cell_logic(rect_grid, i, j, pos):
+def check_arrow_logic(rect_grid, i, j, arrows):
+    offsets = [offset for arrow, offset in arrows]
+    curr_offset = [j * 120, i * 120]
+    if curr_offset in offsets:
+        launch_sequence(rect_grid, arrows[offsets.index(curr_offset)], i, j)
+        arrows = [] # flushing list
+    return arrows
+
+def check_cell_logic(rect_grid, i, j):
     cell = rect_grid[i][j]
-    cell_obj = cell[0]
     cell_color = cell[1]
     print(cell_color, i, j)
-    if (cell_obj[0] < pos[0] < cell_obj[0] + cell_obj[2]) and (cell_obj[1] < pos[1] < cell_obj[1] + cell_obj[2]):
+    if cell_color != 2:
         cell_color = 2
     return cell_color
 
 def check_arrows(rect_grid, i, j, arrows):
-    if rect_grid[i - 1][j][1] == 0:
-        print('reached here for', i, j)
+    if i > 0 and rect_grid[i - 1][j][1] == 0:
         offset = [j * 120, (i - 1) * 120]
-        arrow = '↑'
-        if [arrow, offset] not in arrows:
-            arrows.append([arrow, offset])
+        symbol = '↑'
+        if [symbol, offset] not in arrows:
+            arrows.append([symbol, offset])
+    if j > 0 and rect_grid[i][j - 1][1] == 0:
+        offset = [(j - 1) * 120, i * 120]
+        symbol = '←'
+        if [symbol, offset] not in arrows:
+            arrows.append([symbol, offset])
+    if i + 1 < WINDOW_HEIGHT // BLOCK_SIZE and rect_grid[i + 1][j][1] == 0:
+        offset = [j * 120, (i + 1) * 120]
+        symbol = '↓'
+        if [symbol, offset] not in arrows:
+            arrows.append([symbol, offset])
+    if j + 1 < WINDOW_WIDTH // BLOCK_SIZE and rect_grid[i][j + 1][1] == 0:
+        offset = [(j + 1) * 120, i * 120]
+        symbol = '→'
+        if [symbol, offset] not in arrows:
+            arrows.append([symbol, offset])
+
     return arrows
 
 def draw_arrow(arrow, offset):
@@ -256,18 +307,17 @@ def draw_arrows(arrows):
 
 def draw_grid(rect_grid):
     # SCREEN.fill('BLACK')
-    blockSize = 120 #Set the size of the grid block
-    for x in range(0, WINDOW_WIDTH // blockSize):
-        for y in range(0, WINDOW_HEIGHT // blockSize):
+    for x in range(0, WINDOW_WIDTH // BLOCK_SIZE):
+        for y in range(0, WINDOW_HEIGHT // BLOCK_SIZE):
             rect = rect_grid[x][y][0]
             code = rect_grid[x][y][1]
             pygame.draw.rect(SCREEN, code_to_color[code], rect)
 
 
-    for x in range(blockSize, WINDOW_WIDTH, blockSize):
-        for y in range(blockSize, WINDOW_HEIGHT, blockSize):
-            pygame.draw.line(SCREEN, 'WHITE', (x, y - blockSize), (x, WINDOW_HEIGHT))
-            pygame.draw.line(SCREEN, 'WHITE', (x - blockSize, y), (WINDOW_WIDTH, y))
+    for x in range(BLOCK_SIZE, WINDOW_WIDTH, BLOCK_SIZE):
+        for y in range(BLOCK_SIZE, WINDOW_HEIGHT, BLOCK_SIZE):
+            pygame.draw.line(SCREEN, 'WHITE', (x, y - BLOCK_SIZE), (x, WINDOW_HEIGHT))
+            pygame.draw.line(SCREEN, 'WHITE', (x - BLOCK_SIZE, y), (WINDOW_WIDTH, y))
 
     return rect_grid
 
