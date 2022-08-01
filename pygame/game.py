@@ -1,8 +1,10 @@
-from turtle import position
+from turtle import pos, position
 import pygame
 
 WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 600
+
+clock = pygame.time.Clock()
 
 global rect_grid
 
@@ -20,6 +22,8 @@ arrow_to_coord = {
     '←': [35, 20],
     '↑': [47, 25],
 }
+
+global arrows
 
 
 def out_of_boundary(position,map):
@@ -191,30 +195,34 @@ def main():
     outer_flag = False
     inner_flag = False
     rect_grid = []
-    for x in range(0, WINDOW_WIDTH, blockSize):
+    for y in range(0, WINDOW_WIDTH, blockSize):
         rect_row = []
-        for y in range(0, WINDOW_HEIGHT, blockSize):
+        for x in range(0, WINDOW_HEIGHT, blockSize):
             rect = pygame.Rect(x, y, blockSize, blockSize)
             code = 0
             pygame.draw.rect(SCREEN, code_to_color[code], rect, 1)
             rect_row.append([rect, 0])
         rect_grid.append(rect_row)
 
+    arrows = []
+
     while True:
-        rect_grid = drawGrid(rect_grid)
+        rect_grid = draw_grid(rect_grid)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                for i, row in enumerate(rect_grid):
-                    for j, cell in enumerate(row):
-                        cell_color = check_cell_logic(rect_grid, i, j, pos)
-                        rect_grid[i][j][1] = cell_color
-                        pygame.draw.rect(SCREEN, code_to_color[cell_color], rect_grid[i][j][0])
-        
+                i, j = pos[1] // blockSize, pos[0] // blockSize 
+                cell_color = check_cell_logic(rect_grid, i, j, pos)
+                rect_grid[i][j][1] = cell_color
+                arrows = check_arrows(rect_grid, i, j, arrows)
 
+        print(arrows)
+        draw_arrows(arrows)
+        clock.tick(10)
         pygame.display.update()
 
 
@@ -222,18 +230,32 @@ def check_cell_logic(rect_grid, i, j, pos):
     cell = rect_grid[i][j]
     cell_obj = cell[0]
     cell_color = cell[1]
+    print(cell_color, i, j)
     if (cell_obj[0] < pos[0] < cell_obj[0] + cell_obj[2]) and (cell_obj[1] < pos[1] < cell_obj[1] + cell_obj[2]):
-            cell_color = 2
+        cell_color = 2
     return cell_color
 
-def drawArrow(arrow):
-    position = arrow_to_coord[arrow]
+def check_arrows(rect_grid, i, j, arrows):
+    if rect_grid[i - 1][j][1] == 0:
+        print('reached here for', i, j)
+        offset = [j * 120, (i - 1) * 120]
+        arrow = '↑'
+        if [arrow, offset] not in arrows:
+            arrows.append([arrow, offset])
+    return arrows
+
+def draw_arrow(arrow, offset):
+    position = [coord1 + coord2 for coord1, coord2 in zip(arrow_to_coord[arrow], offset)]
     font = pygame.font.Font('seguisym.ttf', 50)# Defining a font with font and size
     text_surface = font.render(arrow, True, 'GREEN')# Defining the text color which will be rendered
     SCREEN.blit(text_surface, (position[0], position[1])) # Rendering the font        
 
-def drawGrid(rect_grid):
-    SCREEN.fill('BLACK')
+def draw_arrows(arrows):
+    for arrow, offset in arrows:
+        draw_arrow(arrow, offset)
+
+def draw_grid(rect_grid):
+    # SCREEN.fill('BLACK')
     blockSize = 120 #Set the size of the grid block
     for x in range(0, WINDOW_WIDTH // blockSize):
         for y in range(0, WINDOW_HEIGHT // blockSize):
