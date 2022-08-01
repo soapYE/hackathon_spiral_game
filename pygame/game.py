@@ -224,43 +224,56 @@ def main():
                 if not final_cell: # if we haven't hit a sequence
                     arrows = check_arrows(rect_grid, i, j, arrows)
                 else:
-                    arrows = check_arrows(rect_grid, final_cell[0], final_cell[1], arrows)
+                    arrows = check_arrows(rect_grid, final_cell[0], final_cell[1], arrows) # migrate to new target
+                if not arrows: # either a dead end or success
+                    check_win(rect_grid)
 
-        # print(arrows)
         draw_arrows(arrows)
-        clock.tick(10)
+        clock.tick(50)
         pygame.display.update()
 
 def launch_sequence(rect_grid, arrow, i, j):
     symbol = arrow[0]
     if symbol == '↑':
         for k in range(1, i + 1):
-            if rect_grid[i - k][j][1] == 0:
+            if rect_grid[i - k][j][1] in [1, 2, 3]: # red, yellow, and green cells are stop points!
+                final_cell = i - (k - 1), j # rolls back
+                break
+            elif rect_grid[i - k][j][1] == 0:
                 rect_grid[i - k][j][1] = 2
+                final_cell = i - k, j # updates to last occurence
                 # pygame.display.update()
                 # pygame.time.delay(100)
-        final_cell = i - k, j
     elif symbol == '←':
         for k in range(0, j + 1):
-            if rect_grid[i][j - k][1] == 0:
+            if rect_grid[i][j - k][1] in [1, 2, 3]:
+                final_cell = i, j - (k - 1)
+                break
+            elif rect_grid[i][j - k][1] == 0:
                 rect_grid[i][j - k][1] = 2
+                final_cell = i, j - k # updates to last occurence
                 # pygame.display.update()
                 # pygame.time.delay(100)
-        final_cell = i, j - k
     elif symbol == '↓':
         for k in range(0, WINDOW_HEIGHT // BLOCK_SIZE - i):
-            if rect_grid[i + k][j][1] == 0:
+            if rect_grid[i + k][j][1] in [1, 2, 3]:
+                final_cell = i + (k - 1), j
+                break
+            elif rect_grid[i + k][j][1] == 0:
                 rect_grid[i + k][j][1] = 2
+                final_cell = i + k, j # updates to last occurence
                 # pygame.display.update()
                 # pygame.time.delay(100)
-        final_cell = i + k, j
     elif symbol == '→': 
         for k in range(0, WINDOW_WIDTH // BLOCK_SIZE - j):
-            if rect_grid[i][j + k][1] == 0:
+            if rect_grid[i][j + k][1] in [1, 2, 3]:
+                final_cell = i, j + (k - 1)
+                break
+            elif rect_grid[i][j + k][1] == 0:
                 rect_grid[i][j + k][1] = 2
+                final_cell = i, j + k # updates to last occurence
                 # pygame.display.update()
                 # pygame.time.delay(100)
-        final_cell = i, j + k
     return final_cell
 
 def check_arrow_logic(rect_grid, i, j, arrows):
@@ -303,6 +316,21 @@ def check_arrows(rect_grid, i, j, arrows):
             arrows.append([symbol, offset])
 
     return arrows
+
+def check_win(rect_grid):
+    is_lost = False
+    for row in rect_grid:
+        for cell in row:
+            if cell[1] == 0:
+                is_lost = True
+                print('You lost!')
+                pygame.quit()
+                sys.exit()
+    if not is_lost:
+        print('You won!')
+        # greenify_path()
+        pygame.quit()
+        sys.exit()
 
 def draw_arrow(arrow, offset):
     position = [coord1 + coord2 for coord1, coord2 in zip(arrow_to_coord[arrow], offset)]
