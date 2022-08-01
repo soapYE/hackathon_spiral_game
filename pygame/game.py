@@ -10,6 +10,11 @@ clock = pygame.time.Clock()
 
 global rect_grid
 
+red_blocks = [
+    [0, 1],
+    [3, 2],
+]
+
 code_to_color = {
     0: 'BLACK',
     1: 'RED',
@@ -206,6 +211,10 @@ def main():
             rect_row.append([rect, 0])
         rect_grid.append(rect_row)
 
+    #load level
+    for x, y in red_blocks:
+        rect_grid[x][y][1] = 1
+
     arrows = []
 
     while True:
@@ -218,7 +227,15 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 i, j = pos[1] // blockSize, pos[0] // blockSize 
-                arrows, final_cell = check_arrow_logic(rect_grid, i, j, arrows)
+                if not arrows:
+                    arrows, final_cell = check_arrow_logic(rect_grid, i, j, arrows)
+                else:
+                    offsets = [offset for symbol, offset in arrows]
+                    curr_offset = [j * 120, i * 120]
+                    if curr_offset in offsets:
+                        arrows, final_cell = check_arrow_logic(rect_grid, i, j, arrows)
+                    else:
+                        continue
                 cell_color = check_cell_logic(rect_grid, i, j)
                 rect_grid[i][j][1] = cell_color
                 if not final_cell: # if we haven't hit a sequence
@@ -289,7 +306,7 @@ def check_cell_logic(rect_grid, i, j):
     cell = rect_grid[i][j]
     cell_color = cell[1]
     print(cell_color, i, j)
-    if cell_color != 2:
+    if cell_color not in [1, 2, 3]:
         cell_color = 2
     return cell_color
 
