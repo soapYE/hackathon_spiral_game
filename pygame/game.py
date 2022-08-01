@@ -218,10 +218,13 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 i, j = pos[1] // blockSize, pos[0] // blockSize 
-                arrows = check_arrow_logic(rect_grid, i, j, arrows)
+                arrows, final_cell = check_arrow_logic(rect_grid, i, j, arrows)
                 cell_color = check_cell_logic(rect_grid, i, j)
                 rect_grid[i][j][1] = cell_color
-                arrows = check_arrows(rect_grid, i, j, arrows)
+                if not final_cell: # if we haven't hit a sequence
+                    arrows = check_arrows(rect_grid, i, j, arrows)
+                else:
+                    arrows = check_arrows(rect_grid, final_cell[0], final_cell[1], arrows)
 
         # print(arrows)
         draw_arrows(arrows)
@@ -236,32 +239,38 @@ def launch_sequence(rect_grid, arrow, i, j):
                 rect_grid[i - k][j][1] = 2
                 # pygame.display.update()
                 # pygame.time.delay(100)
+        final_cell = i - k, j
     elif symbol == '←':
         for k in range(0, j + 1):
             if rect_grid[i][j - k][1] == 0:
                 rect_grid[i][j - k][1] = 2
                 # pygame.display.update()
                 # pygame.time.delay(100)
+        final_cell = i, j - k
     elif symbol == '↓':
         for k in range(0, WINDOW_HEIGHT // BLOCK_SIZE - i):
             if rect_grid[i + k][j][1] == 0:
                 rect_grid[i + k][j][1] = 2
                 # pygame.display.update()
                 # pygame.time.delay(100)
+        final_cell = i + k, j
     elif symbol == '→': 
         for k in range(0, WINDOW_WIDTH // BLOCK_SIZE - j):
             if rect_grid[i][j + k][1] == 0:
                 rect_grid[i][j + k][1] = 2
                 # pygame.display.update()
                 # pygame.time.delay(100)
+        final_cell = i, j + k
+    return final_cell
 
 def check_arrow_logic(rect_grid, i, j, arrows):
-    offsets = [offset for arrow, offset in arrows]
+    offsets = [offset for symbol, offset in arrows]
     curr_offset = [j * 120, i * 120]
+    final_cell = () # the cell that stops the sequence (final cell)
     if curr_offset in offsets:
-        launch_sequence(rect_grid, arrows[offsets.index(curr_offset)], i, j)
+        final_cell = launch_sequence(rect_grid, arrows[offsets.index(curr_offset)], i, j)
         arrows = [] # flushing list
-    return arrows
+    return arrows, final_cell
 
 def check_cell_logic(rect_grid, i, j):
     cell = rect_grid[i][j]
